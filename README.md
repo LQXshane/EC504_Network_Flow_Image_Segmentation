@@ -15,6 +15,7 @@ then
 1. image_process: include Gaussian Mixture and kmeans for likelihood score calculation
 2. max_flow: core segmentation functions
 3. main.py: driver program
+
 Along with the zip we have also put a few toy images for test.
 
 #### Now, in your commmand line
