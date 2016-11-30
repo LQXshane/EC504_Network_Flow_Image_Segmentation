@@ -9,20 +9,20 @@ import sys
 sys.path.append('/Users/Shane/Documents/EC504_Network_Flow_Image_Segmentation/')
 from image_process.GMM.proba import proba_gmm
 from max_flow.mincut_fordfulkerson import mincut
+from image_process.graph_utils import graph_penalty
 from sklearn import decomposition
 import cv2
 import numpy as np
+from math import*
+
 
 
 # functions used to normalize and cal. scores
 def sigmoid_array(x):
   return 1 / (1 + np.exp(-x))
 
-def fsigmoid(x):
-  return 1 / (1 + np.exp(x))
-
-
 if __name__ == '__main__':
+
     if len(sys.argv[1]) < 3:
         print "Please specify the name of your image!"
         exit()
@@ -78,11 +78,17 @@ if __name__ == '__main__':
     V = n+2 # including source and sink, V is the dim. of the input matrix
     graph = [[0 for col in range(V)] for row in range(V)]
 
+    gp = graph_penalty()
+
+    print gp.width, gp.height
+    gp.dist_penalty(graph)
+
     for i in range(1,n+1):
         graph[0][i], graph[i][n+1] = int(a[i-1]), int(b[i-1])
-        for k in range(1,n+1,25):
-            for j in range(1,26):
-                if k+j<n+1: graph[i][k+j]= np.int(fsigmoid((j/1.5))*3)
+
+    # embed()
+
+
 
     src = 0  # source node
     sink = n + 1  # sink node
