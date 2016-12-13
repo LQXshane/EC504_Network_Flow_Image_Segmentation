@@ -12,7 +12,7 @@ from sklearn import decomposition
 
 def proba_gmm(Z, K = '' , type = ''):
 
-    g = mixture.GMM(n_components=K, covariance_type= type) # tried 'full' or 'spherical' no improvememts
+    g = mixture.GMM(n_components=K, covariance_type= type, random_state= 2500) # tried 'full' or 'spherical' no improvememts
     g.fit(Z)
     center = g.means_ # centroid RGB values
     center = np.uint8(center)

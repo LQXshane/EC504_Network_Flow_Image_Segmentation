@@ -14,6 +14,7 @@ from sklearn import decomposition
 import cv2
 import numpy as np
 from math import*
+from skimage.measure import block_reduce
 
 
 
@@ -32,10 +33,13 @@ if __name__ == '__main__':
     Z = img.reshape((-1,3))
     Z = np.float32(Z)
 
-    w, h = img.shape[:2]
-    if w != h:
-        print "Only support N-by-N images at this time... "
-        exit()
+    original_width, original_height = img.shape[:2]
+
+    print "Your image is in size %d * %d" %(original_width, original_height)
+
+    # if original_width != original_height:
+    #     print "Only support N-by-N images at this time... "
+    #     exit()
 
 
     print "Getting likelihood scores: ", datetime.now()
@@ -55,22 +59,25 @@ if __name__ == '__main__':
     # Step3. Down-sampling: due to the limits of our current algorithm,
     # we scale it into 25*25 and "merged" the corresponding likelihood scores
     # MinCut takes about 30s
-    # however, 50*50 image would take much larger.
-    scale_ratio = int(w/25)
-    new_proba_a = [[0 for col in range(25)] for row in range(25)]
-    tmp = reduced_proba[:,0].reshape(w,h)
+    # however, 50*50 image would take much longer.
+    scalestring = input("Enter your desired scale ratio: ")
+    scale_ratio = int(scalestring)
+    w = int(original_width/scale_ratio  )
+    h = int(original_height/scale_ratio  )
+    new_proba_a = [[0 for col in range(w)] for row in range(h)]
+    tmp = reduced_proba[:,0].reshape(original_width,original_height)
     for i in range(0,len(tmp), scale_ratio):
         for j in range(0,len(tmp),scale_ratio):
            new_proba_a[i/scale_ratio][j/scale_ratio] =  tmp[i][j] + tmp[i][j+1] + tmp[i+1][j] + tmp[i+1][j+1]
 
-    new_proba_b = [[0 for col in range(25)] for row in range(25)]
-    tmp = reduced_proba[:,1].reshape(w,h)
+    new_proba_b = [[0 for col in range(w)] for row in range(h)]
+    tmp = reduced_proba[:,1].reshape(original_width,original_height)
     for i in range(0,len(tmp), scale_ratio):
         for j in range(0,len(tmp),scale_ratio):
            new_proba_b[i/scale_ratio][j/scale_ratio] =  tmp[i][j] + tmp[i][j+1] + tmp[i+1][j] + tmp[i+1][j+1]
 
-    a = np.ceil(np.array(new_proba_a)*7).reshape(625)
-    b = np.ceil(np.array(new_proba_b)*7).reshape(625)
+    a = np.ceil(np.array(new_proba_a)*7).reshape(w*h)
+    b = np.ceil(np.array(new_proba_b)*7).reshape(w*h)
 
     # Ai and Bi's are obtained, generating adjacency matrix ...
 
@@ -80,13 +87,13 @@ if __name__ == '__main__':
 
     gp = graph_penalty()
 
-    print gp.width, gp.height
+    gp.width, gp.height     = w, h
     gp.dist_penalty(graph)
 
     for i in range(1,n+1):
         graph[0][i], graph[i][n+1] = int(a[i-1]), int(b[i-1])
 
-    # embed()
+    embed()
 
 
 
@@ -94,20 +101,24 @@ if __name__ == '__main__':
     sink = n + 1  # sink node
 
     print "Matrix dimension:  V = ",V, ", finding a minimum cut...", datetime.now()
+
+    # print " Depending on your image size, this will take approximatly %d min. " %
     # call mincut
     visited_nodes = mincut(graph, src, sink, V)
 
-    print "Reconstructing Image, hit return to quit program ...", datetime.now()
+    print "Reconstructing Image, mouse over to check the images and hit 'return' to quit program ...", datetime.now()
 
 
-    final_label = np.array(visited_nodes[1:626])
+    final_label = np.array(visited_nodes[1:w*h +1])
     final_label = final_label * 1
     center[0] , center[1]= [0,0,0] , [255,255,255]
     res_new = center[final_label.flatten()]
-    res2_new = res_new.reshape((25,25,3))
+    res2_new = res_new.reshape((w,h,3))
+    # embed()
+    # res2_new = cv2.pyrUp(res2_new,dstsize = (original_width,original_height))
+    from scipy.misc import imresize
 
-    res2_new = cv2.pyrUp(res2_new,dstsize = (50,50))
-
+    res2_new = imresize(res2_new, (original_width, original_height, 3))
 
 
     cv2.imshow('Original Image', img)

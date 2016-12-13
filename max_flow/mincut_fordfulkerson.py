@@ -3,13 +3,14 @@
 # returns the edges that are from one segment to another in the graph
 # and the total values of flows along the max-flow path
 
-
+# from IPython import embed
+# import pandas as pd
 # V = 6  # Number of vertices in a graph
 # # Define a graph and a residual graph
 # # The graph is stored as a matrix
 # # values in the matrix are actual flow from one node to another
 # graph = [[0 for col in range(V)] for row in range(V)]
-# rgraph = [[0 for col in range(V)] for row in range(V)]
+# # rgraph = [[0 for col in range(V)] for row in range(V)]
 # graph = [
 #          [0, 16,13,0, 0, 0 ],
 #          [0, 0, 10,12,0, 0 ],
@@ -20,8 +21,9 @@
 #                             ]
 # src = 0  # source node
 # sink = 5  # sink node
-
-
+# # embed()
+import pandas as pd
+import numpy as np
 # BFS: returns true if there is a path from source 's' to sink 't'
 # in the residual graph
 def bfs(rgraph, s, t, parent, V):
@@ -103,13 +105,13 @@ def mincut(graph, s, t, V):
     visited = bfs2(rgraph, s, parent, V)
 
     # print the edges that are from one segment to another in the graph
-    for i in range(V):
-        for j in range(V):
-            if visited[i] and not visited[j] and graph[i][j]:
-                print "%d - %d" % (i, j)
+    # for i in range(V):
+    #     for j in range(V):
+    #         if visited[i] and not visited[j] and graph[i][j]:
+    #             print "%d - %d" % (i, j)
     print "The total values of flows is: %d" % total_flow
     return visited
 
-#
+
 # # test
-# mincut(graph, src, sink)
+# vis_node = mincut(graph, src, sink,V)
